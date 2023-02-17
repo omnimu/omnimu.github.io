@@ -1,6 +1,0 @@
-<ruleset name="Feedback PHPCS Ruleset">
- <description>Description of your coding standard</description>
-
- <rule ref="Generic.PHP.DisallowShortOpenTag"/>
- <!-- ... -->
-</ruleset>
