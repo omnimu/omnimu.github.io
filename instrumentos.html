@@ -1,0 +1,878 @@
+<style>
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .row > [class*='col-'] {
+      flex-grow: 1;
+    }
+
+    .panel {
+      border:0px;
+      margin:0px;
+      padding:0px;
+      box-shadow:revert;
+    }
+
+    .panel-default {
+      border: 1px solid #ccc; /* Borde sólido */
+      box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5); /* Sombra */
+      padding:0px;
+    }
+
+    .panel-default > .panel-heading {
+      background-color:transparent;
+      border:0px;
+      padding:0px 0px 0px 10px;
+      height:20px;
+      color:#888888;
+      font-size:8pt;
+    }
+
+    .panel-body {
+      background-color:transparent;
+      border:0px;
+      padding:0px 0px 10px 0px;
+    }
+
+    .panel-footer {
+      background-color:transparent;
+      border:0px;
+      padding:0px 0px 0px 10px;
+      margin-bottom:10px;
+      height:30px;
+    }
+
+    .authors {
+      font-size:9pt;
+      margin: 0px 0px 0px 10px;
+    }
+
+    .authors_paper {
+      font-size:7pt;
+      color:#808080;
+      margin: 0px 0px 10px 10px;
+    }
+
+    .title {
+      margin: 5px 0px 5px 0px;
+      padding:0px 0px 0px 10px;
+      color:#2b65b0;
+      font-weight:bold;
+      font-size:10pt;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+
+    .title_paper {
+      margin: 5px 0px 0px 0px;
+      padding:0px 0px 0px 10px;
+      font-size:8pt;
+      font-weight: bold;
+      color:#404040;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+
+    .meeting_type {
+      font-size:9pt;
+      opacity:.8;
+      margin: 0px;
+      padding:5px 5px 5px 10px;
+      border-radius:10px;
+    }
+
+
+
+    .smallday{
+      color:#808080;
+      font-size:12px;
+      margin: 0px 0px 20px 0px;
+    }
+
+    ul {
+    margin:0px 0px 5px 5px;
+    padding-left:15px;
+    }
+
+    li {
+    margin-bottom:0px;
+    }
+
+    .discussant {
+    font-size:8pt;
+      color:#808080;
+      margin: 10px 0px 10px 0px;
+      padding:0px 0px 0px 10px;
+    }
+
+    #searchInput {
+      width: 80%;
+      box-sizing: border-box;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      overflow: hidden; /* Evita que el contenido desborde del contenedor */
+    }
+
+    .sidebar {
+      width: 250px; /* Ancho de la barra lateral */
+      background-color: #0066B9;
+      color: white;
+      padding: 10px;
+      position: sticky;
+      top: 0;
+    }
+
+    .sidebar-content {
+      position: sticky;
+      top: 50px; /* Ajusta la distancia desde la parte superior */
+      padding: 10px; /* Espacio alrededor del contenido */
+    }
+
+    .content {
+      flex: 1;
+      padding: 20px; /* Espacio alrededor del contenido */
+    }
+
+    /* Agrega estilos para la imagen del botón colapsable */
+    .collapsed img {
+      height: 15px;
+      opacity: 0.6;
+      margin-left: 15px;
+      cursor: pointer;
+    }
+
+    /* Agrega estilos para el contenido colapsable */
+    .panel-collapse {
+      display: none; /* Inicialmente oculta el contenido */
+      padding: 10px;
+      background-color: #f2f2f2;
+    }
+    .panel-collapse.active {
+      display: block; /* Muestra el contenido cuando active está presente */
+    }
+    .btn-checkbox {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #98df8a;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    .btn-checkbox:hover {
+      background-color: #5cb85c;
+    }
+    .btn-checkbox:active {
+      background-color: #5cb85c;
+    }
+    .btn-checkbox input[type="checkbox"] {
+      position: absolute;
+      /*left: -9999px;*/
+      visibility: hidden;
+    }
+    .btn-checkbox input[type="checkbox"]:checked{
+      visibility: visible;
+      background-color: #5cb85c;
+    }
+    .btn-filtros {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #fff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-reset {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #000;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    .letra {
+      position: relative;
+      padding-bottom: 10px; /* Agrega un espacio en la parte inferior para separar el contenido de la línea */
+    }
+
+    .letra::before {
+      content: "";
+      position: absolute;
+      bottom: 0; /* Alinea la línea en la parte inferior del contenedor */
+      left: 0;
+      width: 100%;
+      border-bottom: 2px solid rgba(0, 0, 0, 0.5); /* Línea inferior con opacidad (en este caso, 50%) */
+    }
+
+
+
+</style>
+<script>
+  
+
+    function createHTMLFromJSON(data) {
+        // Ordenar los instrumentos Alfabeticamente
+        data.sort(function(a, b) {
+          return a.Sigla.localeCompare(b.Sigla);
+        });
+       
+        var html = '';
+    
+        // Iterar sobre los eventos
+        for (var i = 0; i < data.length; i++) {
+          var event = data[i];
+            
+          var pletra = event.Sigla[0];
+          
+
+        
+          // Create the event container if it is a new DAY
+          if (i === 0 || event.Sigla[0] !== data[i - 1].Sigla[0]) {
+            if (i === data.length - 1) {html += '<div class="row slotsuperior">\n';}
+            if (i !== data.length - 1) {html += '<div class="row letra slotsuperior">\n';}            
+            html += '<div class="col-lg-12 col-md-12 col-sm-12" style="width:100%; max-width:100%;">\n';
+            html += '<p style="color:#2b65b0; font-size:24pt; font-weight:bold;">' + pletra + '</p>\n';
+            html += '</div>\n<br>\n';
+            html += '<div class="col-lg-12 col-md-12 col-sm-12">\n';
+            // Create the event container if it is a new Timeslot
+            html += '<div class="container-fluid" style="padding:0px;">\n';
+            html += '<div class="row">\n';
+            // Presentations/Events Start
+            html += '<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">\n';                  
+            html += '<div class="row">\n';                           
+          }
+    
+
+    
+          // Crear el elemento de la presentación
+          
+          html += '<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 slotmedio searchContainer" style="width: 90%; max-width:90%;">\n';          
+          html += '<div class="panel panel-default" style="height:100%;">\n';
+          html += '<div class="panel-body">\n';
+          html += '<p class="meeting_type">' + event.Sigla + '</p>\n';
+          html += '<p class="title searchItem">' + event.Instrumento_Esp + '</p>\n';
+          html += '<p class="authors searchItem">' + event.Instrumento_Ing + '</p>\n';
+          html += '<div class="panel-footer">\n';
+          html += '<a class="collapsed" role="button" data-toggle="collapse" href="#collapseListGroup' + i + '" aria-expanded="false" aria-controls="collapseListGroup' + i + '">\n';
+          html += '<img alt="Show Presentations" src="https://sprargentina.org/wp-content/uploads/2023/08/mostrar_articulos.png" style="height:15px; opacity:0.6; margin-left:15px;" />\n';
+          html += '</a>\n';
+          html += '</div>\n';
+          html += '<div id="collapseListGroup' + i + '" class="panel-collapse collapse" role="tabpanel" aria-labelledby="collapseListGroupHeading' + i + '" aria-expanded="false">\n';
+    
+            // Iterate on the presentations of the presentation
+            
+            for (var j = 1; j < ((Object.keys(event).length - 3) / 18) + 1; j++) {
+              
+              if (j === 1) {
+                var ref = 'Referencia';
+                var a_publ = 'Año_publicacion';
+                var primer_a = 'Contacto_Primer_Autor';
+                var pre = 'Preliminar';
+                var d_n = 'DOI_NUM';
+                var d_l = 'DOI_LINK';
+                var l_a = 'link_articulo';
+                var i_a = 'idioma_articulo';
+                var l_i = 'link_instrumento';
+                var i_i = 'idioma_instrumento';
+                var cons = 'Constructo';
+                var dim = 'Dimensiones';
+                var r_e = 'Rasgo_Estado';
+                var pbl_e = 'Poblacion_Etaria';
+                var pbl_d = 'Poblacion_Diagnóstico';
+                var pbl_goc = 'Poblacion_GoC';
+                var pbl_l = 'Población_Lugar';
+                var pbl_t = 'Poblacion_Terapeuta'; 
+              }
+              if (j !== 1) {
+                var ref = 'Referencia' + j;
+                var a_publ = 'Año_publicacion' + j;
+                var primer_a = 'Contacto_Primer_Autor' + j;
+                var pre = 'Preliminar' + j;
+                var d_n = 'DOI_NUM' + j;
+                var d_l = 'DOI_LINK' + j;
+                var l_a = 'link_articulo' + j;
+                var i_a = 'idioma_articulo' + j;
+                var l_i = 'link_instrumento' + j;
+                var i_i = 'idioma_instrumento' + j;
+                var cons = 'Constructo' + j;
+                var dim = 'Dimensiones' + j;
+                var r_e = 'Rasgo_Estado' + j;
+                var pbl_e = 'Poblacion_Etaria' + j;
+                var pbl_d = 'Poblacion_Diagnóstico' + j;
+                var pbl_goc = 'Poblacion_GoC' + j;
+                var pbl_l = 'Población_Lugar' + j;
+                var pbl_t = 'Poblacion_Terapeuta' + j;
+              }
+ 
+              const nombresCat = [cons, r_e, pbl_e, pbl_d, pbl_goc, pbl_l, pbl_t];
+              var listcat = nombresCat.flatMap((clave) => event[clave].split(','));
+              var listcat = listcat.map((valor) => valor.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+              var listcat = listcat.filter((vacios) => vacios !== "");
+              var listcat = listcat.filter((elemento, indice, array) => {return array.indexOf(elemento) === indice;});
+              var listcat = listcat.map(categoria => categoria.replace(/\s+/g, "_").toLowerCase());
+              var listcat = listcat.join(' ');
+              html += '<div class="slot ' + listcat + '">\n';
+              html += '<p class="title_paper searchItem">' + event[ref] + '</p>\n';
+              
+              // html += '<p class="title_paper searchItem ">' + event[ref] + '</p>\n';
+
+              if (event[d_l] !== "") {  
+                  if (event[d_n] !== "") {  
+                    html += '<a target="_blank" href="' + event[d_l] + '"><p class="authors_paper searchItem"><b>' + event[d_n] + '</b></p><a>\n';
+                  } else {
+                    html += '<a target="_blank" href="' + event[d_l] + '"><p class="authors_paper searchItem"><b>Web</b></p><a>\n';
+                  }
+                }
+                html += '<div class="panel-footer">\n';
+                if (event[l_a] !== "") {
+                  html += '<a target="_blank" href="' + event[l_a] + '"><img alt="" src="https://sprargentina.org/wp-content/uploads/2023/08/articulo_color.png" style="height:15px;" /></a>\n';
+                } else {
+                  html += '<img alt="" src="https://sprargentina.org/wp-content/uploads/2023/08/articulo_gris.png" style="height:15px;" />\n';
+                }
+                if (event[l_i] !== "") {
+                  html += '<a target="_blank" href="' + event[l_i] + '"><img alt="" src="https://sprargentina.org/wp-content/uploads/2023/08/instrumento_color.png" style="height:12px;" /></a>\n';
+                } else {
+                  html += '<img alt="" src="https://sprargentina.org/wp-content/uploads/2023/08/instrumento_gris.png" style="height:15px;" />\n';
+                }
+                html += '</div>\n';      
+                html += '</div>\n';      
+              
+            }
+            
+    
+            html += '    </div>\n';
+            
+          
+    
+          html += '    </div>\n';
+          html += '    </div>\n';
+          html += '    </div>\n';
+        
+          // Cerrar el contenedor del evento si es el último del día o si es el último evento
+          if (i === data.length - 1 || event.Sigla[0] !== data[i + 1].Sigla[0]) {
+            html += '</div>\n';                  
+            html += '</div>\n'; // Close Presentations/Events Start
+    
+            html += '</div>\n';
+            html += '</div>\n'; // Cerrar el contenedor del evento si es el último de la franja horario o si es el último evento
+
+            html += '<p style="text-align: right; vertical-align: bottom;"><a href="#">▲ Back to Top</a></p>\n';                  
+    
+            html += '</div>\n';
+            html += '</div>\n';
+          }
+        }
+        return html;
+      }
+
+      function createHTMLcateg(data) {
+        const nombresCat = ["Constructo", "Rasgo_Estado", "Poblacion_Etaria", "Poblacion_Diagnóstico", "Poblacion_GoC", "Población_Lugar", "Poblacion_Terapeuta"];
+        const coloresCat = ["#98df8a", "#ffbb78", "#ff9896", "#9edae5", "#c5b0d5", "#e2efda", "#f7b6d2"];
+        var html = '';
+        for (let i = 0; i < nombresCat.length; i++) {
+          var categ = nombresCat[i];
+          var color = coloresCat[i];
+          var listcat = [];
+          data.forEach((objeto) => {
+            var valor = objeto[categ].split(",");
+            var valor = valor.map((valor) => valor.trim());
+            listcat.push(...valor);
+          });
+          var listcat = listcat.filter((vacios) => vacios !== "");
+          var listcat = listcat.filter((elemento, indice, array) => {return array.indexOf(elemento) === indice;});
+          listcat.sort();
+          if (listcat.length !== 0) {
+            if (categ === "Constructo") {var titulo = "Constructo Evaluado"}
+            if (categ === "Rasgo_Estado") {var titulo = "Caracteristica de la Evauluación"}
+            if (categ === "Poblacion_Etaria") {var titulo = "Grupo Etario"}
+            if (categ === "Poblacion_Diagnóstico") {var titulo = "Tipo de Diagnóstico"}
+            if (categ === "Poblacion_GoC") {var titulo = "Tipo de Población"}
+            if (categ === "Población_Lugar") {var titulo = "Territorio"}
+            if (categ === "Poblacion_Terapeuta") {var titulo = "Para Terapeutas"}
+            html += '<br>\n';
+            html += '<br><b style="color:#404040;">' + titulo + ':</b>\n';
+            html += '<br>\n';
+            html += '<div class="btn-group" data-toggle="buttons">\n';
+            for (var j = 0; j < listcat.length; j++) {
+              var categoria = listcat[j]
+              var etiqueta = categoria.replace(/\s+/g, "_").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+              html += '<label class="btn-checkbox toggles" for="' + etiqueta + '_toggle"><input type="checkbox" id="' + etiqueta + '_toggle">' + categoria + '</label>\n';
+            }
+            html += '</div>\n'; 
+          }          
+        }
+        
+    
+        
+        return html;
+      }
+</script>
+
+<div class="row">
+  <div class="col-lg-6 col-md-6 col-sm-6" style="margin-bottom:20px;">
+      <p style="font-size:11px; color:#888888;">
+          <img alt="" src="https://sprargentina.org/wp-content/uploads/2023/08/articulo_color.png" style="height:15px;" /> Clicking the blue Zoom logo will open the Zoom meeting <i>(the links are not yet active in the Preliminary Schedule)</i>.
+          <br /><img alt="" src="https://sprargentina.org/wp-content/uploads/2023/08/articulo_gris.png" style="height:15px;" /> A grey Zoom logo during the conference indicates that there will not be a Zoom meeting for the session.
+      </p>
+  </div>
+  <div class="col-lg-6 col-md-6 col-sm-6" style="margin-bottom:20px;">
+    <p style="font-size:11px; color:#888888;">
+        <img alt="" src="https://sprargentina.org/wp-content/uploads/2023/08/instrumento_color.png" style="height:15px;" /> Clicking the colored myOnvent logo will open myOnvent <i>(the links are not yet active in the Preliminary Schedule)</i>.
+        <br /><img alt="" src="https://sprargentina.org/wp-content/uploads/2023/08/instrumento_gris.png" style="height:15px;" /> A grey myOnvent logo during the conference indicates that there will be no live stream of the session on myOnvent.
+    </p>
+</div>
+</div>
+<div class="container" style="max-width:1600px;">
+    <div class="content-above"></div>
+    <div class="collapse in sidebar" id="collapseExample">
+        <div class="sidebar-content">            
+            <div class="row">
+                <div class="col-md-6">
+                    <b style="color:#404040;">Buscar:</b>
+                    <br />
+                    <input type="text" id="searchInput" placeholder="Search">
+                </div>
+            </div>
+            <div id="categhtmlContainer"></div>            
+            <br />
+            <br />
+            <div class="row">
+                <div class="col-lg-9 col-md-8 col-sm-6" style="margin-bottom:20px;">
+                  <button class="btn-filtros" id="reset_toggle">Sin Filtros</button>                    
+                  <p>
+                        <a href="#CAMBIAR">
+                            <button type="button" class="btn-reset">
+                            <span class="glyphicon glyphicon-refresh"></span> Refrescar
+                            </button>
+                        </a>
+                    </p>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <div class="content">
+      <div style="width:100%; padding:20px; margin:20px 0 0 0;" id="htmlContainer"></div>
+    </div>
+</div>
+
+
+
+<script>
+  /*Funcion para colapsar*/
+    document.addEventListener("DOMContentLoaded", function() {   
+      var collapsedLinks = document.querySelectorAll(".collapsed");
+
+      collapsedLinks.forEach(function(link) {
+        link.addEventListener("click", function(event) {
+          var target = this.getAttribute("href");
+          var targetPanel = document.querySelector(target);
+
+          if (targetPanel) {
+            targetPanel.classList.toggle("active");
+            event.preventDefault(); // Evita que la página se desplace al hacer clic en el enlace
+          }
+        });
+      });
+    });
+
+
+    // Cambios en los botones checkbox
+    /*const checkbox = document.querySelector('# input[type="checkbox"]');
+    checkbox.addEventListener('change', function() {
+      const label = this.parentNode;
+      if (this.checked) {
+        label.style.backgroundColor = '#5cb85c';
+      } else {
+        label.style.backgroundColor = '#98df8a';
+      }
+    });
+*/
+
+
+
+    var dbStrings = [
+    {
+        "Sigla": "ASI-3",
+        "Instrumento_Esp": "Índice de Sensibilidad a la Ansiedad-3",
+        "Instrumento_Ing": "Anxiety Sensitivity Index-3",
+        "Referencia": "Rodríguez de Behrends, M., Brenlla, M.E. (2016). Evaluación preliminar de las propiedades psicométricas del índice de sensibilidad a la ansiedad (ASI-3). En VIII Congreso Internacional de Investigación y Práctica Profesional en Psicología. XXIII Jornadas de Investigación. Décimo Encuentro de Investigadores en Psicología del MERCOSUR. Buenos Aires : Universidad de Buenos Aires. Facultad de Psicología",
+        "Año_publicacion": "2016",
+        "Contacto_Primer_Autor": "bsandin@psi.uned.es",
+        "Preliminar": "si",
+        "DOI_NUM": "",
+        "DOI_LINK": "https://repositorio.uca.edu.ar/handle/123456789/6244",
+        "link_articulo": "https://drive.google.com/file/d/12em_81eye9_flVXoREfk0fIzRjc2-tJ6/view?usp=share_link",
+        "idioma_articulo": "Español",
+        "link_instrumento": "https://drive.google.com/file/d/1_aQ9WtW3KGIkoIFXU3hQ_JS3vWZsE5Vf/view?usp=share_link",
+        "idioma_instrumento": "Español",
+        "Constructo": "Sensibilidad Ansiosa",
+        "Dimensiones": "Preocupaciones Somáticas, Preocupaciones Sociales, Preocupaciones Cognitivas",
+        "Rasgo_Estado": "",
+        "Poblacion_Etaria": "",
+        "Poblacion_Diagnóstico": "Ansiedad",
+        "Poblacion_GoC": "General, Cínica",
+        "Población_Lugar": "Buenos Aires",
+        "Poblacion_Terapeuta": ""
+    },
+    {
+        "Sigla": "BSQ",
+        "Instrumento_Esp": "Cuestionario sobre Forma Corporal",
+        "Instrumento_Ing": "Body Shape Questionnaire",
+        "Referencia": "Poala Nieri, L. (2020). Validez del Body Shape Questionnaire (BSQ) en mujeres Argentina. Revista de PSICOLOGÍA DE LA SALUD, 8(1). https://doi.org/10.21134/pssa.v8i1.667",
+        "Año_publicacion": "2020",
+        "Contacto_Primer_Autor": "liliananieri@hotmail.com",
+        "Preliminar": "no",
+        "DOI_NUM": "10.21134/pssa.v8i1.667",
+        "DOI_LINK": "https://doi.org/10.21134/pssa.v8i1.667",
+        "link_articulo": "https://drive.google.com/file/d/1c6UEeDc-ZijWe0LoG7efRGeE74PmSzQo/view?usp=share_link",
+        "idioma_articulo": "Español",
+        "link_instrumento": "https://drive.google.com/file/d/1c6UEeDc-ZijWe0LoG7efRGeE74PmSzQo/view?usp=share_link",
+        "idioma_instrumento": "Español",
+        "Constructo": "Insatisfacción Corporal",
+        "Dimensiones": "Preocupación por el Peso, Insatisfacción Corporal",
+        "Rasgo_Estado": "Rasgo",
+        "Poblacion_Etaria": "Adultos",
+        "Poblacion_Diagnóstico": "",
+        "Poblacion_GoC": "General",
+        "Población_Lugar": "Buenos Aires",
+        "Poblacion_Terapeuta": ""
+    },
+    {
+        "Sigla": "CBCL",
+        "Instrumento_Esp": "Lista de Verificación del Comportamiento Infantil versión para padres",
+        "Instrumento_Ing": "Child Behavior Checklist",
+        "Referencia": "Vázquez, N., & Samaniego, V. C. (2017). Estandarización del Child Behavior Checklist para preescolares de población urbana de Argentina. Revista Evaluar, 17(1). https://doi.org/10.35670/1667-4545.v17.n1.17075",
+        "Año_publicacion": "2017",
+        "Contacto_Primer_Autor": "natalia_vazquez@uca.edu.ar",
+        "Preliminar": "no",
+        "DOI_NUM": "10.35670/1667-4545.v17.n1.17075",
+        "DOI_LINK": "http://dx.doi.org/10.35670/1667-4545.v17.n1.17075",
+        "link_articulo": "https://drive.google.com/file/d/1CNXA7u7wnh6uWOJC0SFzUkSW9hAtmUnN/view?usp=share_link",
+        "idioma_articulo": "Español",
+        "link_instrumento": "",
+        "idioma_instrumento": "Español",
+        "Constructo": "Problemas Comportamentales, Problemas Emocionales",
+        "Dimensiones": "Problemas Externalizantes, Problemas Internalizantes, Comportamiento Agresivo, Problemas de Atención, Emocionalmente Reactivo, Retraimiento, Ansioso Depresivo, Quejas Somáticas, Problemas de Sueño",
+        "Rasgo_Estado": "",
+        "Poblacion_Etaria": "Niños",
+        "Poblacion_Diagnóstico": "",
+        "Poblacion_GoC": "General, Cínica",
+        "Población_Lugar": "Buenos Aires",
+        "Poblacion_Terapeuta": ""
+    },
+    {
+        "Sigla": "CBCL",
+        "Instrumento_Esp": "Lista de Verificación del Comportamiento Infantil versión para padres",
+        "Instrumento_Ing": "Child Behavior Checklist",
+        "Referencia": "Samaniego, V.C. (2008). El Child Behavior Checklist : su estandarización en población urbana argentina. Revista de Psicología, 4(8). Disponible en: http://bibliotecadigital.uca.edu.ar/repositorio/revistas/child-behavior-cheklist-estandarizacion-samaniego.pdf",
+        "Año_publicacion": "2008",
+        "Contacto_Primer_Autor": "corina_samaniego@uca.edu.ar",
+        "Preliminar": "no",
+        "DOI_NUM": "",
+        "DOI_LINK": "https://repositorio.uca.edu.ar/handle/123456789/6107",
+        "link_articulo": "https://drive.google.com/file/d/1b2MWlz8p0Aki03DDBXKR6BEGhzgRjyOQ/view?usp=share_link",
+        "idioma_articulo": "Español",
+        "link_instrumento": "",
+        "idioma_instrumento": "Español",
+        "Constructo": "",
+        "Dimensiones": "Problemas de Pensamiento, Quejas Somaticas, Problemas Sociales, Conducta Antisocial, Retraimiento, Problemas Sexuales",
+        "Rasgo_Estado": "",
+        "Poblacion_Etaria": "Niños",
+        "Poblacion_Diagnóstico": "",
+        "Poblacion_GoC": "General, Cínica",
+        "Población_Lugar": "Buenos Aires",
+        "Poblacion_Terapeuta": ""
+    },
+    {
+        "Sigla": "MAQ",
+        "Instrumento_Esp": "Cuestionario de Habilidades Metacognitivas",
+        "Instrumento_Ing": "Metacognitive Abilities Questionnaire",
+        "Referencia": "Giraldo-O'Meara, M., Fernández-Álvarez, J. & Belloch Fuster, A.. (2019). Evaluación metacognitiva en psicopatología: el cuestionario de habilidades metacognitivas (CHM). Revista argentina de clínica psicológica, 28(1), 67-78.",
+        "Año_publicacion": "2019",
+        "Contacto_Primer_Autor": "martha.giraldo@uv.es",
+        "Preliminar": "no",
+        "DOI_NUM": "10.24205/03276716.2019.1091",
+        "DOI_LINK": "http://repositori.uji.es/xmlui/handle/10234/198240",
+        "link_articulo": "https://drive.google.com/file/d/1R5qOmQi_oxm1ocst9XPRnSFkKB-P90yc/view?usp=sharing",
+        "idioma_articulo": "Español",
+        "link_instrumento": "https://drive.google.com/file/d/1R5qOmQi_oxm1ocst9XPRnSFkKB-P90yc/view?usp=sharing",
+        "idioma_instrumento": "Español",
+        "Constructo": "Metacognición",
+        "Dimensiones": "Planificación y Supervisión, Confianza en la Memoria, Autofocalización en los Pensamientos",
+        "Rasgo_Estado": "",
+        "Poblacion_Etaria": "Adultos",
+        "Poblacion_Diagnóstico": "",
+        "Poblacion_GoC": "General",
+        "Población_Lugar": "Argentina",
+        "Poblacion_Terapeuta": ""
+    },
+    {
+        "Sigla": "NPOQ",
+        "Instrumento_Esp": "Cuestionario de Orientación Negativa al Problema",
+        "Instrumento_Ing": "Negative Problem Orientation Questionnaire",
+        "Referencia": "Rodríguez de Behrends, M., & Brenlla, M. E. (2015). Adaptation for Buenos Aires of the Negative Problem Orientation Questionnaire (NPOQ). PSIENCIA Revista Latinoamericana de Ciencia Psicológica, 7(2). https://doi.org/10.5872/psiencia/7.2.23",
+        "Año_publicacion": "2015",
+        "Contacto_Primer_Autor": "marisa@behrends.com.ar",
+        "Preliminar": "si",
+        "DOI_NUM": "10.5872/psiencia/7.2.23",
+        "DOI_LINK": "https://repositorio.uca.edu.ar/handle/123456789/15178",
+        "link_articulo": "https://drive.google.com/file/d/1pdzc91kfOS1jMpAh9_afXwwoXmgrPAyJ/view?usp=share_link",
+        "idioma_articulo": "Español",
+        "link_instrumento": "https://drive.google.com/file/d/1pdzc91kfOS1jMpAh9_afXwwoXmgrPAyJ/view",
+        "idioma_instrumento": "Español",
+        "Constructo": "Orientación Negativa a los Problemas",
+        "Dimensiones": "",
+        "Rasgo_Estado": "Rasgo",
+        "Poblacion_Etaria": "Adultos, Tercera Edad",
+        "Poblacion_Diagnóstico": "",
+        "Poblacion_GoC": "General",
+        "Población_Lugar": "Buenos Aires",
+        "Poblacion_Terapeuta": ""
+    }
+];  
+
+function consolidarInstrumentos(dbStrings) {
+  var instrumentosConsolidados = {};
+
+  var propiedadesAdicionales = ['Referencia', 'Año_publicacion', 'Contacto_Primer_Autor', "Preliminar", "DOI_NUM", "DOI_LINK", "link_articulo", "idioma_articulo", "link_instrumento", "idioma_instrumento", "Constructo", "Dimensiones", "Rasgo_Estado", "Poblacion_Etaria", "Poblacion_Diagnóstico", "Poblacion_GoC", "Población_Lugar", "Poblacion_Terapeuta"];
+
+  dbStrings.forEach(function (instrumento, index) {
+    var key = instrumento.Sigla + instrumento.Instrumento_Esp + instrumento.Instrumento_Ing;
+
+    if (!instrumentosConsolidados[key]) {
+      instrumentosConsolidados[key] = {
+        count: 1,
+        object: { ...instrumento }
+      };
+    } else {
+      propiedadesAdicionales.forEach(function (propiedad) {
+        var newPropName = propiedad + (instrumentosConsolidados[key].count + 1);
+        instrumentosConsolidados[key].object[newPropName] = instrumento[propiedad];
+      });
+
+      instrumentosConsolidados[key].count++;
+    }
+  });
+
+  var result = [];
+  for (var key in instrumentosConsolidados) {
+    if (instrumentosConsolidados.hasOwnProperty(key)) {
+      result.push(instrumentosConsolidados[key].object);
+    }
+  }
+  
+  return result
+  //return JSON.stringify(result, null, 2);
+}
+
+var dbStrings = consolidarInstrumentos(dbStrings);
+
+var html = createHTMLFromJSON(dbStrings);
+document.getElementById("htmlContainer").innerHTML = html;
+
+var html = createHTMLcateg(dbStrings);
+document.getElementById("categhtmlContainer").innerHTML = html;
+
+    
+
+
+    document.addEventListener("DOMContentLoaded", function() {
+      // 1 solo Listado de Categorias
+      const nombresCat = ["Constructo", "Rasgo_Estado", "Poblacion_Etaria", "Poblacion_Diagnóstico", "Poblacion_GoC", "Población_Lugar", "Poblacion_Terapeuta"];
+      var listcat = [];
+      for (let i = 0; i < nombresCat.length; i++) {
+          var categ = nombresCat[i];
+          dbStrings.forEach((objeto) => {
+            var valor = objeto[categ].split(",");
+            var valor = valor.map((valor) => valor.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+            listcat.push(...valor);
+          });
+          var listcat = listcat.filter((vacios) => vacios !== "");
+          var listcat = listcat.filter((elemento, indice, array) => {return array.indexOf(elemento) === indice;});
+      }
+      
+      // Codigo para poner el estado inicial de la Clase
+      var generatedCode = '';
+      generatedCode += 'var activeFilters = {\n';
+      for (var j = 0; j < listcat.length; j++) {
+        var categoria = listcat[j]
+        var etiqueta = categoria.replace(/\s+/g, "_").toLowerCase();
+        generatedCode += etiqueta + ': false,\n';
+      }
+      generatedCode += '};\n';
+      eval(generatedCode); // Ejecuta el codigo JS Generado  
+
+
+
+      //
+      function filterElements() {
+        var selectedFilters = []; // Almacenar las características seleccionadas
+        var slotElements = document.querySelectorAll('.slot');
+
+        // Recorrer todas las características y verificar cuáles están seleccionadas
+        for (const [key, value] of Object.entries(activeFilters)) {
+          if (value) {
+            selectedFilters.push(key);
+          }
+        }
+
+        // Mostrar todos los elementos inicialmente
+        for (var i = 0; i < slotElements.length; i++) {
+          slotElements[i].style.display = 'block';
+        }
+
+        // Filtrar los elementos para mostrar solo aquellos que tienen todas las características seleccionadas
+        if (selectedFilters.length > 0) {
+          for (var i = 0; i < slotElements.length; i++) {
+            var elemento = slotElements[i];
+            var tieneTodasLasCaracteristicas = true;
+
+            // Verificar si el elemento tiene todas las características seleccionadas
+            for (var j = 0; j < selectedFilters.length; j++) {
+              var caracteristica = selectedFilters[j];
+              if (!elemento.classList.contains(caracteristica)) {
+                tieneTodasLasCaracteristicas = false;
+                break; // No es necesario verificar más características si falta una
+              }
+            }
+
+            // Ocultar el elemento si no tiene todas las características seleccionadas
+            if (!tieneTodasLasCaracteristicas) {
+              elemento.style.display = 'none';
+            }
+          }
+        }
+
+        // Ocultar contenedores vacíos si es necesario
+        var containers = document.querySelectorAll('.slotmedio, .slotsuperior');
+        containers.forEach(function (container) {
+          var elementsWithDisplay = container.querySelectorAll('.slot:not([style*="display: none"])');
+          if (elementsWithDisplay.length === 0) {
+            container.style.display = 'none';
+          } else {
+            container.style.display = 'block';
+          }
+        });
+      }
+
+
+
+      // Crear un nuevo elemento <style> en el documento para darle estilos a los botones y tarjetas
+      var styleElement = document.createElement('style');
+      var style = '';
+      for (var j = 0; j < listcat.length; j++) {
+        var categoria = listcat[j]
+        var etiqueta = categoria.replace(/\s+/g, "_").toLowerCase();
+        style += `
+          .` + etiqueta + `_toggle {\n
+            background-color: blue;\n
+            color: white;\n
+            padding: 10px;\n
+          }\n
+        `;
+        style += `
+          .` + etiqueta + `_toggle:hover {\n
+            background-color: blue;\n
+            color: white;\n
+            padding: 10px;\n
+          }\n
+        `;
+        style += `
+          .` + etiqueta + `_toggle:active {\n
+            background-color: blue;\n
+            color: white;\n
+            padding: 10px;\n
+          }\n
+        `;
+      }             
+      styleElement.textContent = style 
+      document.head.appendChild(styleElement);
+      
+
+
+      // Codigo para cuando se clickea los botones
+      var generatedCode = '';
+      for (var j = 0; j < listcat.length; j++) {
+        var categoria = listcat[j]
+        var etiqueta = categoria.replace(/\s+/g, "_").toLowerCase();
+        generatedCode += 'document.getElementById("' + etiqueta + '_toggle").addEventListener("click", function() {\n';
+        generatedCode += 'activeFilters.' + etiqueta + ' = !activeFilters.' + etiqueta + ';\n';
+        generatedCode += 'filterElements();\n';
+        generatedCode += '});\n';
+      }
+      eval(generatedCode);
+
+
+      document.getElementById("reset_toggle").addEventListener("click", function() {
+        for (var filter in activeFilters) {
+          activeFilters[filter] = false;
+        }
+        filterElements();
+      });
+
+    });
+
+
+
+
+   
+
+
+    // Search Function
+    var input = document.getElementById('searchInput');
+    var containers = document.getElementsByClassName('searchContainer');
+
+    input.addEventListener('input', function() { // Add event to search input
+      var filter = input.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/gi, "");
+      var match = false; // Variable to check if matches were found
+
+      // Iterate on containers
+      for (var i = 0; i < containers.length; i++) {
+        var container = containers[i];
+        var items = container.getElementsByClassName('searchItem');
+        var visible = false; // Variable to control whether to display the container
+
+        // Filter the elements inside the container according to the input content
+        for (var j = 0; j < items.length; j++) {
+          var item = items[j];
+          var content = item.textContent.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/gi, "");
+
+          if (content.includes(filter)) {
+            // item.style.display = 'block';  // Show the element
+            visible = true;     // Show container
+            match = true;        // There is coincidence
+          } // else {
+            // item.style.display = 'none';   // Hide the element
+          // }
+        }
+
+        if (!visible) {
+          container.style.display = 'none'; // Hide container if no matches found
+        } else {
+          container.style.display = 'block'; // Show container if matches found
+        }
+      }
+
+      if (!match) {
+        for (var i = 0; i < container.length; i++) {
+          container[i].style.display = 'none'; // Hide all containers if no matches found
+        }
+      }
+    });
+</script>
